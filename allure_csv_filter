@@ -3,25 +3,25 @@
 require "csv"
 
 def error(message)
-  puts "Error: #{message}"
+  abort("ERROR: #{message}")
+end
+
+def check_filepath(filepath)
+  if filepath.nil?
+    error("First argument should be a filepath to csv allure report file")
+  end
+
+  unless File.exist?(filepath)
+    error("File does not exist")
+  end
+
+  unless File.extname(filepath) == ".csv"
+    error("File is not a csv file")
+  end
 end
 
 filepath = ARGV[0]
-
-if filepath.nil?
-  error("First argument should be a filepath to csv allure report file")
-  return
-end
-
-unless File.exist?(filepath)
-  error("File does not exist")
-  return
-end
-
-unless File.extname(filepath) == ".csv"
-  error("File is not a csv file")
-  return
-end
+check_filepath(filepath)
 
 tests_collection = CSV.read(filepath, headers: true)
 failed_tests_collection = tests_collection.select { |row| ["failed", "broken"].include?(row["Status"]) }
@@ -36,6 +36,6 @@ end
 
 failed_tests_locations = failed_tests_locations.uniq
 puts "failed unique count: #{failed_tests_locations.count}\n"
-puts #newline
+puts # newline
 
 puts failed_tests_locations
