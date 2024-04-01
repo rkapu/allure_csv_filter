@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require "csv"
+
+def error(message)
+  puts "Error: #{message}"
+end
+
+filepath = ARGV[0]
+
+if filepath.nil?
+  error("First argument should be a filepath to csv allure report file")
+  return
+end
+
+unless File.exist?(filepath)
+  error("File does not exist")
+  return
+end
+
+unless File.extname(filepath) == ".csv"
+  error("File is not a csv file")
+  return
+end
+
+tests_collection = CSV.read(filepath, headers: true)
+failed_tests_collection = tests_collection.select { |row| ["failed", "broken"].include?(row["Status"]) }
+
+puts "all count: #{tests_collection.count}"
+puts "failed count: #{failed_tests_collection.count}\n"
+
+failed_tests_locations = failed_tests_collection.map do |row|
+  test_file_path = row["Description"].slice(row["Description"].index("features/")..-1)
+  test_file_path.split(":")[0]
+end
+
+failed_tests_locations = failed_tests_locations.uniq
+puts "failed unique count: #{failed_tests_locations.count}\n"
+puts #newline
+
+puts failed_tests_locations
