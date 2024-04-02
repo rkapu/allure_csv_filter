@@ -42,8 +42,8 @@ unique_failed_tests_locations = failed_tests_collection.map do |row|
 end
 unique_failed_tests_locations.uniq!
 
-puts "all count: #{all_count}"
-puts "failed count: #{failed_tests_collection.count}\n"
-puts "failed unique count: #{unique_failed_tests_locations.count}\n"
+puts "all scenarios count: #{all_count}"
+puts "failed scenarios count: #{failed_tests_collection.count}\n"
+puts "failed unique files count: #{unique_failed_tests_locations.count}\n"
 puts # newline
 puts unique_failed_tests_locations
