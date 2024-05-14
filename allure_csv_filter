@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "csv"
+require_relative "benchmark_helper"
 
 FAIL_STATUSES = ["failed", "broken"].freeze
 
@@ -22,28 +23,40 @@ def check_filepath(filepath)
   end
 end
 
-filepath = ARGV[0]
-check_filepath(filepath)
+def main
+  filepath = ARGV[0]
+  check_filepath(filepath)
 
-failed_tests_collection = []
-all_count = 0
+  failed_tests_collection = []
+  all_count = 0
 
-CSV.foreach(filepath, headers: true) do |row|
-  all_count += 1
+  CSV.foreach(filepath, headers: true) do |row|
+    all_count += 1
 
-  next unless FAIL_STATUSES.include?(row["Status"])
+    next unless FAIL_STATUSES.include?(row["Status"])
 
-  failed_tests_collection << row
+    failed_tests_collection << row
+  end
+
+  unique_failed_tests_locations = failed_tests_collection.map do |row|
+    test_file_path = row["Description"].slice(row["Description"].index("features/")..-1)
+    test_file_path.split(":")[0]
+  end
+  unique_failed_tests_locations.uniq!
+
+  puts "all scenarios count: #{all_count}"
+  puts "failed scenarios count: #{failed_tests_collection.count}\n"
+  puts "failed unique files count: #{unique_failed_tests_locations.count}\n"
+  puts # newline
+  puts unique_failed_tests_locations
 end
 
-unique_failed_tests_locations = failed_tests_collection.map do |row|
-  test_file_path = row["Description"].slice(row["Description"].index("features/")..-1)
-  test_file_path.split(":")[0]
+if ENV["BENCHMARK"]
+  print_memory_usage do
+    print_time_spent do
+      main
+    end
+  end
+else
+  main
 end
-unique_failed_tests_locations.uniq!
-
-puts "all scenarios count: #{all_count}"
-puts "failed scenarios count: #{failed_tests_collection.count}\n"
-puts "failed unique files count: #{unique_failed_tests_locations.count}\n"
-puts # newline
-puts unique_failed_tests_locations
